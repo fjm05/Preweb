@@ -17,13 +17,19 @@ export async function fetchPokemonByName(name) {
 }
 
 export function mapPokemonToAnalysis(data) {
+  const types = Array.isArray(data.types)
+    ? typeof data.types[0] === 'string'
+      ? data.types
+      : data.types.map((t) => t.type.name)
+    : [];
+
   return {
     id: data.id,
     name: data.name,
-    image: data.sprites?.front_default ?? '',
+    image: data.image ?? data.sprites?.front_default ?? '',
     height: data.height,
     weight: data.weight,
-    types: data.types?.map((t) => t.type.name) ?? [],
+    types,
   };
 }
 

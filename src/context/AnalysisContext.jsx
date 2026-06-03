@@ -13,18 +13,32 @@ export function AnalysisProvider({ children }) {
   );
 
   const addPokemon = useCallback((pokemon) => {
-    if (analysisList.some((p) => p.id === pokemon.id)) {
-      return { ok: false, message: 'Este Pokémon ya está en la lista de análisis.' };
-    }
-    if (analysisList.length >= MAX_ANALYSIS) {
-      return {
-        ok: false,
-        message: `Solo puedes agregar hasta ${MAX_ANALYSIS} Pokémon.`,
+    let result = { ok: false, message: '' };
+
+    setAnalysisList((prev) => {
+      if (prev.some((p) => p.id === pokemon.id)) {
+        result = {
+          ok: false,
+          message: 'Este Pokémon ya está en la lista de análisis.',
+        };
+        return prev;
+      }
+      if (prev.length >= MAX_ANALYSIS) {
+        result = {
+          ok: false,
+          message: `Solo puedes agregar hasta ${MAX_ANALYSIS} Pokémon.`,
+        };
+        return prev;
+      }
+      result = {
+        ok: true,
+        message: 'Pokémon agregado a la lista de análisis.',
       };
-    }
-    setAnalysisList((prev) => [...prev, pokemon]);
-    return { ok: true, message: 'Pokémon agregado a la lista de análisis.' };
-  }, [analysisList]);
+      return [...prev, pokemon];
+    });
+
+    return result;
+  }, []);
 
   const removePokemon = useCallback((id) => {
     setAnalysisList((prev) => prev.filter((p) => p.id !== id));

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import ErrorMessage from '../components/ErrorMessage';
 import Loading from '../components/Loading';
 import { useAnalysis } from '../context/AnalysisContext';
-import { fetchPokemonByName, mapPokemonToAnalysis, mapPokemonDetail } from '../services/api';
+import { fetchPokemonByName, mapPokemonDetail } from '../services/api';
 
 export default function PokemonDetail() {
   const { name } = useParams();
@@ -11,7 +11,7 @@ export default function PokemonDetail() {
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,7 +19,7 @@ export default function PokemonDetail() {
     async function loadDetail() {
       setLoading(true);
       setError('');
-      setFeedback('');
+      setFeedback(null);
       try {
         const data = await fetchPokemonByName(name);
         if (!cancelled) {
@@ -66,8 +66,15 @@ export default function PokemonDetail() {
   const listFull = analysisList.length >= maxAnalysis;
 
   const handleAdd = () => {
-    const result = addPokemon(mapPokemonToAnalysis(pokemon));
-    setFeedback(result.message);
+    const result = addPokemon({
+      id: pokemon.id,
+      name: pokemon.name,
+      image: pokemon.image,
+      height: pokemon.height,
+      weight: pokemon.weight,
+      types: pokemon.types,
+    });
+    setFeedback(result);
   };
 
   return (
@@ -119,18 +126,27 @@ export default function PokemonDetail() {
             type="button"
             className="btn btn-primary"
             onClick={handleAdd}
-            disabled={alreadyAdded || listFull}
+            disabled={alreadyAdded}
           >
             {alreadyAdded
               ? 'Ya está en análisis'
               : listFull
-                ? 'Lista de análisis llena'
+                ? 'Lista de análisis llena (máx. 4)'
                 : 'Agregar a lista de análisis'}
           </button>
 
-          {feedback && <p className="feedback">{feedback}</p>}
+          {feedback && (
+            <p
+              className={`feedback ${feedback.ok ? 'feedback-success' : 'feedback-error'}`}
+              role="status"
+            >
+              {feedback.message}
+            </p>
+          )}
           {alreadyAdded && !feedback && (
-            <p className="feedback">Este Pokémon ya está en la lista de análisis.</p>
+            <p className="feedback feedback-error" role="status">
+              Este Pokémon ya está en la lista de análisis.
+            </p>
           )}
         </div>
       </div>
